@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmaMatch - Juego de Emparejamiento de Fármacos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c6ec8;
+            --secondary-color: #1d51a3;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f8ff;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eaeaea;
+        }
+        
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .instructions {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .timer {
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+            background-color: var(--light-color);
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .timer i {
+            color: var(--warning-color);
+            margin-right: 10px;
+            font-size: 1.4em;
+        }
+        
+        #tiempoRestante {
+            font-weight: bold;
+            color: var(--danger-color);
+        }
+        
+        .game-area {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        
+        .column {
+            width: 48%;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .column h3 {
+            color: var(--dark-color);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eaeaea;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        
+        .card {
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .card-button {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+        
+        .card-button:hover {
+            background-color: #e9f0fd;
+            border-color: #bbd0f7;
+        }
+        
+        .selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            transform: scale(1.02);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .correct {
+            background-color: var(--success-color);
+            color: white;
+            border-color: #1e7e34;
+        }
+        
+        .incorrect {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: #bd2130;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .score-item {
+            text-align: center;
+        }
+        
+        .score-label {
+            font-size: 0.9em;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+        
+        .score-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .aciertos-value {
+            color: var(--success-color);
+        }
+        
+        .errores-value {
+            color: var(--danger-color);
+        }
+        
+        .total-value {
+            color: var(--primary-color);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: slideDown 0.3s;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .modal-message {
+            font-size: 1.2em;
+            font-weight: 500;
+            color: var(--success-color);
+        }
+        
+        .result-details {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .result-value {
+            font-weight: 500;
+        }
+        
+        .final-score {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .final-score-label {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+        
+        .final-score-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #f0f8ff;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .modal-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .nivel-dificultad {
+            margin-bottom: 15px;
+        }
+        
+        .nivel-label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .nivel-select {
+            padding: 8px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            font-size: 1rem;
+        }
+        
+        .nivel-info {
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .combo-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            display: none;
+            animation: popIn 0.5s;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s infinite;
+        }
+        
+        /* Estilos responsivos */
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .column {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .timer {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .button {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .modal-content {
+                width: 90%;
+                margin: 20% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo"><i class="fas fa-pills"></i>FARMAMATCH</div>
+            <div class="subtitle">Servicio de Farmacia. Hospital U.P. La Fe</div>
+        </header>
+        
+        <div class="instructions">
+            <p>Empareja cada fármaco con su actividad farmacológica. Asegúrate de hacerlo bien, los errores te quitan puntos. Y hazlo en el menor tiempo posible para obtener puntos extra.</p>
+        </div>
+        
+        <div class="nivel-dificultad">
+            <span class="nivel-label">Nivel de dificultad:</span>
+            <select id="nivelDificultad" class="nivel-select">
+                <option value="facil">Fácil</option>
+                <option value="medio" selected>Medio</option>
+                <option value="dificil">Difícil</option>
+            </select>
+            <div class="nivel-info">Fácil: 3 pares | Medio: 5 pares | Difícil: 7 pares</div>
+        </div>
+        
+        <div class="game-controls">
+            <button id="iniciarJuego" class="button"><i class="fas fa-play"></i> Iniciar Juego</button>
+            <div class="timer">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Tiempo: <span id="tiempoRestante">60</span> segundos</span>
+            </div>
+        </div>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">Aciertos</div>
+                <div class="score-value aciertos-value" id="aciertos">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Errores</div>
+                <div class="score-value errores-value" id="errores">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Puntuación</div>
+                <div class="score-value total-value" id="puntuacionTotal">0</div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <div class="column" id="medicamentos">
+                <h3><i class="fas fa-capsules"></i> Medicamentos</h3>
+            </div>
+            <div class="column" id="actividades">
+                <h3><i class="fas fa-microscope"></i> Actividades Farmacológicas</h3>
+            </div>
+        </div>
+        
+        <div id="combo-counter" class="combo-counter" style="display: none;">
+            ¡Bonus de tiempo! +<span id="bonus-points">1</span>
+        </div>
+        
+        <div id="resumenModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Fin del Juego</div>
+                    <div class="modal-message" id="mensajeFinal"></div>
+                </div>
+                
+                <div class="result-details">
+                    <div class="result-item">
+                        <span class="result-label">Tiempo empleado:</span>
+                        <span class="result-value" id="tiempoEmpleado"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Aciertos:</span>
+                        <span class="result-value" id="puntosAciertos"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Errores:</span>
+                        <span class="result-value" id="puntosErrores"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Bonus por tiempo:</span>
+                        <span class="result-value" id="puntosTiempo"></span>
+                    </div>
+                </div>
+                
+                <div class="final-score">
+                    <div class="final-score-label">PUNTUACIÓN TOTAL</div>
+                    <div class="final-score-value" id="puntuacionFinal">0</div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button id="jugarNuevamente" class="button">Jugar Nuevamente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lista de pares de medicamento-actividad
+        const paresMedicoActividad = [
+            { medicamento: "Tacrolimus", actividad: "Inmunosupresor" },
+            { medicamento: "Ciclosporina", actividad: "Inmunosupresor" },
+            { medicamento: "Micofenolato", actividad: "Inmunosupresor" },
+            { medicamento: "Everolimus", actividad: "Inmunosupresor" },
+            { medicamento: "Deflazacort", actividad: "Inmunosupresor" },
+            { medicamento: "Valganciclovir", actividad: "Antivírico" },
+            { medicamento: "Sulfametoxazol/Trimetoprim", actividad: "Antibacteriano" },
+            { medicamento: "Nistatina", actividad: "Antifúngico" },
+            { medicamento: "Clorhexidina", actividad: "Antiséptico" },
+            { medicamento: "Pirimetamina", actividad: "Antipalúdico y antitoxoplasma" },
+            { medicamento: "Isoniazida/Piridoxina", actividad: "Antituberculoso" },
+            { medicamento: "Simvastatina", actividad: "Hipolipemiante" },
+            { medicamento: "Pravastatina", actividad: "Hipolipemiante" },
+            { medicamento: "Pantoprazol", actividad: "Inhibidor de la secreción gástrica" },
+            { medicamento: "Omeprazol", actividad: "Inhibidor de la secreción gástrica" },
+            { medicamento: "Diazepam", actividad: "Relajante e inductor del sueño" },            
+            { medicamento: "Lorazepam", actividad: "Relajante e inductor del sueño" },            
+            { medicamento: "Ibuprofeno", actividad: "Antiinflamatorio" },
+            { medicamento: "Atorvastatina", actividad: "Hipolipemiante" },
+            { medicamento: "Metformina", actividad: "Antidiabético" },
+            { medicamento: "Amoxicilina", actividad: "Antibacteriano" },
+            { medicamento: "Losartán", actividad: "Antihipertensivo" },
+            { medicamento: "Paracetamol", actividad: "Analgésico y antipirético" },
+            { medicamento: "Fluoxetina", actividad: "Antidepresivo" },
+            { medicamento: "Acenocumarol", actividad: "Anticoagulante" },
+            { medicamento: "Ácido acetilsalicílico", actividad: "Antiagregante plaquetario" },
+            { medicamento: "Enoxaparina", actividad: "Anticoagulante y antitrombótico" },
+            { medicamento: "Alopurinol", actividad: "Antigotoso" },
+            { medicamento: "Amiodarona", actividad: "Antiarrítmico" },
+            { medicamento: "Amlodipino", actividad: "Antianginoso y antihipertensivo" },
+            { medicamento: "Furosemida", actividad: "Antihipertensivo y diurético" },
+            { medicamento: "Espironolactona", actividad: "Antihipertensivo y diurético" },
+            { medicamento: "Ramiprilo", actividad: "Antihipertensivo" },
+            { medicamento: "Bisoprolol", actividad: "Antihipertensivo/Antianginoso/Antiarrítmico" },
+            { medicamento: "Candesartan", actividad: "Antihipertensivo" },
+            { medicamento: "Hidroclorotiazida", actividad: "Antihipertensivo y diurético" },
+            { medicamento: "Captopril", actividad: "Antihipertensivo" },
+            { medicamento: "Carvedilol", actividad: "Antihipertensivo/Antianginoso/Antiarrítmico" },
+            { medicamento: "Diltiazem", actividad: "Antianginoso y antiarritmico" },
+            { medicamento: "Famotidina", actividad: "Inhibidor de la secreción gástrica" },
+            { medicamento: "Esomeprazol", actividad: "Inhibidor de la secreción gástrica" },
+            { medicamento: "Lansoprazol", actividad: "Inhibidor de la secreción gástrica" },
+            { medicamento: "Calcifediol", actividad: "Hipercalcemiante, factor vitamínico" },
+            { medicamento: "Calcio carbonato + colecalciferol", actividad: "Hipercalcemiante" },
+            { medicamento: "Ferroglicina", actividad: "Antianémico, suplemento" },
+            { medicamento: "Ácido fólico", actividad: "Antianémico/ Factor vitaminínico" },
+            { medicamento: "Potasio", actividad: "Suplemento" },
+            { medicamento: "Magnesio", actividad: "Suplemento/ Electrolito" },
+            { medicamento: "Vitamina D", actividad: "Factor vitamínico" },
+            { medicamento: "Finasterida", actividad: "Antiadenoma prostático" },
+            { medicamento: "Tamsulosina", actividad: "Antiadenoma prostático" },
+            { medicamento: "Insulina glargina", actividad: "Hipoglucemiante/Antidiabético" },
+            { medicamento: "Insulina lispro", actividad: "Hipoglucemiante/Antidiabético" },
+            { medicamento: "Levotiroxina", actividad: "Hormona tiroidea" },
+            { medicamento: "Metamizol", actividad: "Analgésico" },
+            { medicamento: "Tramadol", actividad: "Analgésico" },
+            { medicamento: "Dexketoprofeno", actividad: "Analgésico" },
+            { medicamento: "Metoclopramida", actividad: "Antiemético" },
+            { medicamento: "Zolpidem", actividad: "Hipnótico" },
+            { medicamento: "Aciclovir", actividad: "Antivírico" },
+            { medicamento: "Alprazolam", actividad: "Relajante e inductor del sueño" },
+            { medicamento: "Ampicilina", actividad: "Antibacteriano" },
+            { medicamento: "Azitromicina", actividad: "Antibacteriano" },
+            { medicamento: "Ciprofloxacino", actividad: "Antibacteriano" },
+            { medicamento: "Doxiciclina", actividad: "Antibacteriano" },
+            { medicamento: "Digoxina", actividad: "Cardiotónico" },
+            { medicamento: "Cefazolina", actividad: "Antibacteriano" },
+            { medicamento: "Lamivudina", actividad: "Antivírico" },
+            { medicamento: "Fluconazol", actividad: "Antifúngico" },
+            { medicamento: "Itraconazol", actividad: "Antifúngico" },
+            { medicamento: "Voriconazol", actividad: "Antifúngico" },
+            { medicamento: "Domperidona", actividad: "Antiemético" },
+            { medicamento: "Ondansetrón", actividad: "Antiemético" },
+            { medicamento: "Granisetrón", actividad: "Antiemético" },
+            { medicamento: "Palonosetrón", actividad: "Antiemético" },
+            { medicamento: "Tropisetrón", actividad: "Antiemético" }
+        ];
+
+        // Variables globales del juego
+        let medicamentos = [];
+        let actividades = [];
+        let seleccionado = null;
+        let aciertos = 0;
+        let errores = 0;
+        let maxParesPorNivel = {
+            facil: 3,
+            medio: 5,
+            dificil: 7
+        };
+        let paresMaximos = 5; // Por defecto medio
+        let puntuacion = { total: 0, aciertos: 0, errores: 0, tiempo: 0 };
+        let tiempoRestante = 60;
+        let temporizador;
+        let juegoIniciado = false;
+
+        // Función para seleccionar pares únicos de manera aleatoria
+        function seleccionarParesUnicos() {
+            let paresSeleccionados = [];
+            let actividadesUsadas = new Set();
+            let copiaPares = [...paresMedicoActividad]; // Copia para no modificar el original
+            
+            while (paresSeleccionados.length < paresMaximos && copiaPares.length > 0) {
+                const indiceAleatorio = Math.floor(Math.random() * copiaPares.length);
+                const parSeleccionado = copiaPares[indiceAleatorio];
+                
+                if (!actividadesUsadas.has(parSeleccionado.actividad)) {
+                    paresSeleccionados.push(parSeleccionado);
+                    actividadesUsadas.add(parSeleccionado.actividad);
+                    copiaPares.splice(indiceAleatorio, 1);
+                }
+            }
+            
+            return paresSeleccionados;
+        }
+
+        // Función para mezclar un array (algoritmo Fisher-Yates)
+        function mezclarArray(array) {
+            const nuevoArray = [...array];
+            for (let i = nuevoArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [nuevoArray[i], nuevoArray[j]] = [nuevoArray[j], nuevoArray[i]];
+            }
+            return nuevoArray;
+        }
+        
+        // Función para asegurar que el medicamento y su actividad no estén en la misma posición
+        function evitarCoincidencias(medicamentos, actividades) {
+            // Si los arrays son de diferente longitud, retornar directamente
+            if (medicamentos.length !== actividades.length) return { medicamentos, actividades };
+            
+            const nuevasActividades = [...actividades];
+            
+            // Verificar si hay coincidencias en la misma posición
+            let coincidencias = false;
+            for (let i = 0; i < medicamentos.length; i++) {
+                const med = medicamentos[i];
+                const act = nuevasActividades[i];
+                
+                // Buscar si este medicamento y esta actividad son pareja
+                const sonPareja = paresMedicoActividad.some(
+                    par => par.medicamento === med && par.actividad === act
+                );
+                
+                if (sonPareja) {
+                    coincidencias = true;
+                    break;
+                }
+            }
+            
+            // Si hay coincidencias, volver a mezclar las actividades y verificar de nuevo
+            if (coincidencias) {
+                return evitarCoincidencias(medicamentos, mezclarArray(actividades));
+            }
+            
+            return { medicamentos, actividades: nuevasActividades };
+        }
+
+        // Función principal para iniciar el juego
+        function iniciarJuego() {
+            if (juegoIniciado) {
+                // Si el juego ya está iniciado, reiniciamos
+                clearInterval(temporizador);
+            }
+            
+            const nivelSeleccionado = document.getElementById('nivelDificultad').value;
+            paresMaximos = maxParesPorNivel[nivelSeleccionado];
+            
+            const paresAleatorios = seleccionarParesUnicos();
+            medicamentos = mezclarArray(paresAleatorios.map(par => par.medicamento));
+            actividades = mezclarArray(paresAleatorios.map(par => par.actividad));
+            
+            // Asegurar que no coincidan medicamentos y actividades en la misma posición
+            const arraysMezclados = evitarCoincidencias(medicamentos, actividades);
+            medicamentos = arraysMezclados.medicamentos;
+            actividades = arraysMezclados.actividades;
+            
+            aciertos = 0;
+            errores = 0;
+            puntuacion = { total: 0, aciertos: 0, errores: 0, tiempo: 0 };
+            tiempoRestante = 60;
+            seleccionado = null;
+            juegoIniciado = true;
+
+            document.getElementById('aciertos').textContent = aciertos;
+            document.getElementById('errores').textContent = errores;
+            document.getElementById('puntuacionTotal').textContent = puntuacion.total;
+            document.getElementById('tiempoRestante').textContent = tiempoRestante;
+            document.getElementById('resumenModal').style.display = 'none';
+            document.getElementById('combo-counter').style.display = 'none';
+
+            renderizarOpciones();
+            iniciarTemporizador();
+            
+            // Cambiar texto del botón
+            document.getElementById('iniciarJuego').innerHTML = '<i class="fas fa-sync-alt"></i> Reiniciar';
+        }
+
+        // Función para renderizar las opciones en pantalla
+        function renderizarOpciones() {
+            const medicamentosContainer = document.getElementById('medicamentos');
+            const actividadesContainer = document.getElementById('actividades');
+            
+            medicamentosContainer.innerHTML = '<h3><i class="fas fa-capsules"></i> Medicamentos</h3>';
+            actividadesContainer.innerHTML = '<h3><i class="fas fa-microscope"></i> Actividades Farmacológicas</h3>';
+
+            medicamentos.forEach(med => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const button = document.createElement('button');
+                button.className = 'card-button';
+                button.dataset.item = med;
+                button.dataset.tipo = 'medicamento';
+                button.textContent = med;
+                button.onclick = () => manejarSeleccion(med, 'medicamento');
+                card.appendChild(button);
+                medicamentosContainer.appendChild(card);
+            });
+
+            actividades.forEach(act => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const button = document.createElement('button');
+                button.className = 'card-button';
+                button.dataset.item = act;
+                button.dataset.tipo = 'actividad';
+                button.textContent = act;
+                button.onclick = () => manejarSeleccion(act, 'actividad');
+                card.appendChild(button);
+                actividadesContainer.appendChild(card);
+            });
+        }
+
+        // Función para iniciar el temporizador
+        function iniciarTemporizador() {
+            clearInterval(temporizador); // Aseguramos que no haya temporizadores activos
+            temporizador = setInterval(() => {
+                tiempoRestante--;
+                document.getElementById('tiempoRestante').textContent = tiempoRestante;
+                
+                if (tiempoRestante <= 10) {
+                    document.getElementById('tiempoRestante').classList.add('pulse');
+                } else {
+                    document.getElementById('tiempoRestante').classList.remove('pulse');
+                }
+                
+                if (tiempoRestante <= 0 || aciertos === paresMaximos) {
+                    finalizarJuego();
+                }
+            }, 1000);
+        }
+
+        // Eliminar el div del contador de combo que ya no se usa
+        document.getElementById('combo-counter').style.display = 'none';
+
+        // Función para manejar la selección de una opción
+        function manejarSeleccion(item, tipo) {
+            if (!juegoIniciado) return;
+
+            if (seleccionado === null) {
+                seleccionado = { item, tipo };
+                document.querySelectorAll(`.card-button[data-item="${item}"][data-tipo="${tipo}"]`).forEach(btn => {
+                    btn.classList.add('selected');
+                });
+            } else if (seleccionado.tipo !== tipo) {
+                const parCorrecto = paresMedicoActividad.find(
+                    par => (par.medicamento === seleccionado.item && par.actividad === item) ||
+                           (par.medicamento === item && par.actividad === seleccionado.item)
+                );
+
+                const seleccionadoAnterior = seleccionado;
+                seleccionado = null;
+
+                if (parCorrecto) {
+                    // Acierto
+                    aciertos++;
+                    
+                    // Puntos por acierto (2 puntos por cada acierto)
+                    const puntosAcierto = 2;
+                    puntuacion.aciertos += puntosAcierto;
+                    puntuacion.total += puntosAcierto;
+                    
+                    // Efecto visual de acierto
+                    const btnSeleccionado1 = document.querySelector(`.card-button[data-item="${seleccionadoAnterior.item}"][data-tipo="${seleccionadoAnterior.tipo}"]`);
+                    const btnSeleccionado2 = document.querySelector(`.card-button[data-item="${item}"][data-tipo="${tipo}"]`);
+                    
+                    btnSeleccionado1.classList.add('correct');
+                    btnSeleccionado2.classList.add('correct');
+                    
+                    setTimeout(() => {
+                        medicamentos = medicamentos.filter(med => med !== parCorrecto.medicamento);
+                        actividades = actividades.filter(act => act !== parCorrecto.actividad);
+                        renderizarOpciones();
+                    }, 500);
+                } else {
+                    // Error
+                    errores++;
+                    
+                    // Penalización por error (1 punto menos por cada error)
+                    puntuacion.errores += 1;
+                    puntuacion.total -= 1;
+                    
+                    // Efecto visual de error
+                    const btnSeleccionado1 = document.querySelector(`.card-button[data-item="${seleccionadoAnterior.item}"][data-tipo="${seleccionadoAnterior.tipo}"]`);
+                    const btnSeleccionado2 = document.querySelector(`.card-button[data-item="${item}"][data-tipo="${tipo}"]`);
+                    
+                    btnSeleccionado1.classList.add('incorrect');
+                    btnSeleccionado2.classList.add('incorrect');
+                    
+                    setTimeout(() => {
+                        document.querySelectorAll('.card-button').forEach(btn => {
+                            btn.classList.remove('selected', 'incorrect');
+                        });
+                    }, 800);
+                }
+
+                document.getElementById('aciertos').textContent = aciertos;
+                document.getElementById('errores').textContent = errores;
+                document.getElementById('puntuacionTotal').textContent = puntuacion.total;
+
+                if (aciertos === paresMaximos) {
+                    finalizarJuego();
+                }
+            }
+        }
+
+        // Función para calcular puntos por tiempo
+        function calcularPuntosPorTiempo(tiempoEmpleado, nivelDificultad) {
+            // Más puntos por tiempo según dificultad
+            const multiplicadorNivel = {
+                facil: 1,
+                medio: 1.5,
+                dificil: 2
+            };
+            
+            const multiplicador = multiplicadorNivel[nivelDificultad];
+            
+            if (tiempoEmpleado <= 20) return Math.floor(10 * multiplicador);
+            if (tiempoEmpleado <= 30) return Math.floor(7 * multiplicador);
+            if (tiempoEmpleado <= 40) return Math.floor(5 * multiplicador);
+            if (tiempoEmpleado <= 50) return Math.floor(3 * multiplicador);
+            if (tiempoEmpleado < 60) return Math.floor(1 * multiplicador);
+            return 0;
+        }
+
+        // Función para finalizar el juego
+        function finalizarJuego() {
+            clearInterval(temporizador);
+            juegoIniciado = false;
+            
+            const tiempoEmpleado = 60 - tiempoRestante;
+            const nivelSeleccionado = document.getElementById('nivelDificultad').value;
+            const puntosTiempo = calcularPuntosPorTiempo(tiempoEmpleado, nivelSeleccionado);
+            puntuacion.tiempo = puntosTiempo;
+            puntuacion.total += puntosTiempo;
+            
+            // Resultado final
+            let mensajeFinal = "";
+            if (aciertos === paresMaximos) {
+                if (errores === 0) {
+                    mensajeFinal = "¡PERFECTO! Has completado el juego sin errores.";
+                } else {
+                    mensajeFinal = "¡Felicidades! Has completado el juego.";
+                }
+            } else {
+                mensajeFinal = "Se acabó el tiempo.";
+            }
+
+            document.getElementById('mensajeFinal').textContent = mensajeFinal;
+            document.getElementById('tiempoEmpleado').textContent = tiempoEmpleado + " segundos";
+            document.getElementById('puntosAciertos').textContent = puntuacion.aciertos;
+            document.getElementById('puntosErrores').textContent = `-${puntuacion.errores}`;
+            document.getElementById('puntosTiempo').textContent = puntuacion.tiempo;
+            document.getElementById('puntuacionFinal').textContent = puntuacion.total;
+            
+            // Mostrar modal
+            document.getElementById('resumenModal').style.display = 'block';
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Asegurar que todos los elementos están cargados antes de añadir event listeners
+            document.getElementById('iniciarJuego').addEventListener('click', iniciarJuego);
+            document.getElementById('jugarNuevamente').addEventListener('click', () => {
+                document.getElementById('resumenModal').style.display = 'none';
+                iniciarJuego();
+            });
+            
+            // Inicialización
+            document.getElementById('nivelDificultad').addEventListener('change', function() {
+                // Reiniciar si cambia la dificultad durante un juego activo
+                if (juegoIniciado) {
+                    clearInterval(temporizador);
+                    juegoIniciado = false;
+                    document.getElementById('iniciarJuego').innerHTML = '<i class="fas fa-play"></i> Iniciar Juego';
+                }
+            });
+            
+            // Teclas para seleccionar (para accesibilidad)
+            document.addEventListener('keydown', (e) => {
+                if (!juegoIniciado) return;
+                if (e.key === 'Escape') {
+                    // Deseleccionar
+                    seleccionado = null;
+                    document.querySelectorAll('.selected').forEach(btn => btn.classList.remove('selected'));
+                }
+            });
+        });
+    </script>
+</body>
+</html>
